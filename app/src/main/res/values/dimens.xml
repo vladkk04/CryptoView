@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_crypto_item_icon">5dp</dimen>
+    <dimen name="margin_crypto_item_icon">10dp</dimen>
+
+    <!--Icon Crypto Item-->
+    <dimen name="icon_crypto_width">50dp</dimen>
+    <dimen name="icon_crypto_height">50dp</dimen>
+
+    <dimen name="text_name_crypto_size">22sp</dimen>
+    <dimen name="text_price_crypto_size">18sp</dimen>
+    <dimen name="margin_item_layout">5dp</dimen>
+    <dimen name="currency_item_text_size">20sp</dimen>
+    <dimen name="text_size_currency_rate_item">11sp</dimen>
+    <dimen name="text_filter_by_name_textSize">18sp</dimen>
+    <dimen name="text_filter_by_price_textSize">18sp</dimen>
+
+</resources>

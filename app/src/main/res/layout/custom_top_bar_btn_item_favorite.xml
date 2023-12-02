@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="38dp"
+    android:layout_height="35dp"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="top|center_vertical"
+        android:src="@drawable/btn_star" />
+
+    <TextView
+        android:id="@+id/number_favorite"
+        android:layout_width="20dp"
+        android:layout_height="wrap_content"
+        tools:text="54"
+        android:layout_gravity="top|end"
+        android:textColor="@color/white"
+        android:textSize="11sp" />
+
+</FrameLayout>

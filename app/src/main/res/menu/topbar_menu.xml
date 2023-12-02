@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/search"
+        android:title="Search"
+        android:icon="@drawable/ic_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView">
+    </item>
+
+    <item
+        android:id="@+id/favorite"
+        android:title="@string/tob_bar_title_favorite_text"
+        android:icon="@drawable/btn_star"
+        app:actionLayout="@layout/custom_top_bar_btn_item_favorite"
+        app:showAsAction="always">
+    </item>
+</menu>
