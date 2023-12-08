@@ -24,12 +24,10 @@ annotation class CurrencyDataStore
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class CurrencyDataStorePreferencesModule {
-
     @Binds
     abstract fun bindCurrencyPreferencesService(
         currencyPreferencesRepository: CurrencyPreferencesRepository
     ): CurrencyPreferencesService
-
 
     companion object {
         @Singleton
@@ -39,5 +37,4 @@ abstract class CurrencyDataStorePreferencesModule {
             @ApplicationContext context: Context
         ): DataStore<Preferences> = context.currencyDataStore
     }
-
 }

@@ -8,12 +8,10 @@ import com.example.cryptoview.data.models.Price
 import com.example.cryptoview.data.models.sortBy
 import com.example.cryptoview.data.network.repository.CurrencyRepository
 import com.example.cryptoview.data.network.repository.PriceRepository
-import com.example.cryptoview.ui.states.HomeScreenSortState
-import com.example.cryptoview.ui.states.HomeScreenSortState.SortState
-import com.example.cryptoview.ui.states.HomeScreenSortState.SortBy
 import com.example.cryptoview.ui.states.HomeScreenUIState
+import com.example.cryptoview.ui.states.HomeScreenUIState.SortState
+import com.example.cryptoview.ui.states.HomeScreenUIState.SortBy
 import com.example.cryptoview.ui.states.HomeScreenUIState.LoadingSource
-import com.example.cryptoview.utils.Resource
 import com.example.cryptoview.utils.TypeOfCurrency
 import com.example.cryptoview.utils.getResourceResult
 import com.example.cryptoview.utils.toNormalPrice
@@ -34,82 +32,71 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeScreenUIState())
     val uiState: StateFlow<HomeScreenUIState> get() = _uiState
 
-    private val _uiSortState = MutableStateFlow(HomeScreenSortState())
-    val uiSortState: StateFlow<HomeScreenSortState> get() = _uiSortState
+    private fun updateLoadingSource(isLoadingSource: LoadingSource) =
+        _uiState.update { it.copy(isLoadingSource = isLoadingSource) }
 
-    var tabOnLongListenerPosition = 0
-        private set
+    private fun updateListCryptos(cryptos: List<Price>) =
+        _uiState.update { it.copy(cryptos = cryptos) }
 
-    fun setTabOnLongListenerPosition(position: Int) {
-        tabOnLongListenerPosition = position
+    private fun updateExchangeRate(exchangeRate: Double) =
+        _uiState.update { it.copy(exchangeRate = exchangeRate) }
+
+    private fun updateError(error: String?) =
+        _uiState.update { it.copy(error = error) }
+
+    private fun updateUISortState(
+        isSortedByName: SortState,
+        isSortedByPrice: SortState
+    ) {
+        _uiState.update {
+            it.copy(
+                isSortByName = isSortedByName,
+                isSortByPrice = isSortedByPrice
+            )
+        }
+    }
+
+    private val getPricesByExchangeRate: (cryptos: List<Price>, exchangeRate: Double) -> List<Price> = { cryptos, exchangeRate ->
+        cryptos.map { item ->
+            item.copy(lastPrice = (item.lastPrice.toDouble() * (exchangeRate)).toString().toNormalPrice())
+        }
     }
 
     init {
-        getAllLatestExchangeRates()
-        getDailyCryptoStats()
+        loadDailyCryptoStats()
+        loadAllLatestExchangeRates()
     }
 
-    fun getDailyCryptoStats(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD) = viewModelScope.launch {
-        updateUIState(isLoadingSource = LoadingSource.DAILY_STATS)
-
-        cryptosPreferencesRepository.getAllCryptosFromPreferences()
+    fun loadDailyCryptoStats(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD) = viewModelScope.launch {
+        updateLoadingSource(isLoadingSource = LoadingSource.DAILY_STATS)
 
         getResourceResult(
             data = priceRepository.getDailyCryptoStats(),
             success = {
-                if (typeOfCurrency == TypeOfCurrency.USD) {
-                    updateUIState(cryptos = it)
-                } else {
-                    getAndUpdatePriceByExchangeRate(typeOfCurrency, it)
-                }
+                getAndUpdatePriceByExchangeRate(typeOfCurrency, it)
             },
             error = { message, _ ->
-                updateUIState(error = message)
+                updateError(error = message)
             }
         )
+
+        updateLoadingSource(isLoadingSource = LoadingSource.NONE)
     }
 
-    fun getExchangeRateCurrency(typeOfCurrency: TypeOfCurrency) = viewModelScope.launch {
-        updateUIState(isLoadingSource = LoadingSource.EXCHANGE_RATE)
+    fun loadExchangeRateCurrency(typeOfCurrency: TypeOfCurrency) = viewModelScope.launch {
+        updateLoadingSource(isLoadingSource = LoadingSource.EXCHANGE_RATE)
 
         getResourceResult(
             data = currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency),
             success = {
-                updateUIState(exchangeRate = it)
+                updateExchangeRate(exchangeRate = it)
             }, error = { message, _ ->
-                updateUIState(error = message)
+                updateError(error = message)
             }
         )
     }
 
-    private fun getAllLatestExchangeRates() = viewModelScope.launch {
-        updateUIState(isLoadingSource = LoadingSource.NONE)
-
-        when (val result = currencyRepository.getAllLatestRatesCurrencies()) {
-            is Resource.Success -> currencyPreferencesRepository.saveAllExchangeRatesToPreferences(result.data!!.rates)
-            is Resource.Error -> updateUIState(error = result.message)
-        }
-    }
-
-    private fun getAndUpdatePriceByExchangeRate(
-        typeOfCurrency: TypeOfCurrency,
-        items: List<Price>
-    ) = viewModelScope.launch {
-        getResourceResult(
-            data = currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency),
-            success = {
-                updateUIState(cryptos = items.map { item ->
-                    item.copy(
-                        lastPrice = (item.lastPrice.toDouble() * (it)).toString().toNormalPrice()
-                    )
-                })
-            }, error = { message, _ ->
-                updateUIState(error = message)
-            }
-        )
-    }
-
-    fun getSortBy(sortBy: SortBy) {
+    fun getCryptoSortBy(sortBy: SortBy) {
         sortBy.sortState = SortState.values()[(sortBy.sortState.ordinal + 1) % SortState.values().size]
         resetOtherSortStatesToNone(except = sortBy)
 
@@ -118,8 +105,40 @@ class HomeViewModel @Inject constructor(
             isSortedByPrice = SortBy.PRICE.sortState
         )
 
-        updateUIState(
+        updateListCryptos(
             cryptos = _uiState.value.cryptos.sortBy(sortBy)
+        )
+    }
+
+    private fun loadAllLatestExchangeRates() = viewModelScope.launch {
+        updateLoadingSource(LoadingSource.EXCHANGE_RATE)
+        getResourceResult(
+            data = currencyRepository.getAllLatestRatesCurrencies(),
+            success = {
+                //currencyPreferencesRepository.saveAllExchangeRatesToPreferences(it.rates)
+            },
+            error = { message, _ ->
+                updateError(message)
+            }
+        )
+        updateLoadingSource(LoadingSource.NONE)
+    }
+
+    private fun getAndUpdatePriceByExchangeRate(
+        typeOfCurrency: TypeOfCurrency,
+        items: List<Price>
+    ) = viewModelScope.launch {
+
+        if (typeOfCurrency == TypeOfCurrency.USD)
+            return@launch updateListCryptos(items)
+
+        getResourceResult(
+            data = currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency),
+            success = {
+                updateListCryptos(cryptos = getPricesByExchangeRate(items, it))
+            }, error = { message, _ ->
+                updateError(error = message)
+            }
         )
     }
 
@@ -128,42 +147,6 @@ class HomeViewModel @Inject constructor(
             if (sortBy != except) {
                 sortBy.sortState = SortState.NONE
             }
-        }
-    }
-
-    private fun updateUISortState(
-        isSortedByName: SortState,
-        isSortedByPrice: SortState
-    ) {
-        _uiSortState.update {
-            it.copy(
-                isSortByName = isSortedByName,
-                isSortByPrice = isSortedByPrice
-            )
-        }
-    }
-
-    fun searchBy(query: String) {
-        updateUIState(
-            cryptos = uiState.value.cryptos.filter {
-                it.symbol.contains(query)
-            }
-        )
-    }
-
-    private fun updateUIState(
-        isLoadingSource: LoadingSource = LoadingSource.NONE,
-        cryptos: List<Price>? = null,
-        exchangeRate: Double? = null,
-        error: String? = null
-    ) {
-        _uiState.update {
-            it.copy(
-                isLoadingSource = isLoadingSource,
-                cryptos = cryptos ?: it.cryptos,
-                exchangeRate = exchangeRate,
-                error = error
-            )
         }
     }
 }

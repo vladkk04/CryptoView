@@ -20,7 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApiModule {
-
     @Singleton
     @Provides
     fun provideRetrofit(baseUrl: String): Retrofit = Retrofit.Builder()

@@ -1,10 +1,10 @@
 package com.example.cryptoview.data.network.repository
 
 import com.example.cryptoview.data.models.Price
-import com.example.cryptoview.data.models.filterNormalizeCryptoName
-import com.example.cryptoview.data.models.filterNormalizePrices
-import com.example.cryptoview.data.models.filterCryptosToUSDT
-import com.example.cryptoview.data.models.filterToExistCryptos
+import com.example.cryptoview.data.models.filterCryptoNormalizeName
+import com.example.cryptoview.data.models.filterCryptoNormalizePrices
+import com.example.cryptoview.data.models.filterCryptosByUSDT
+import com.example.cryptoview.data.models.filterCryptosByExistence
 import com.example.cryptoview.data.network.CryptoService
 import com.example.cryptoview.utils.Resource
 import kotlinx.coroutines.CoroutineDispatcher
@@ -21,10 +21,10 @@ class PriceRepository @Inject constructor (
         try {
             val response = cryptoService.getDailyCryptoStats()
             val filteredResponse = response
-                .filterCryptosToUSDT()
-                .filterToExistCryptos()
-                .filterNormalizePrices()
-                .filterNormalizeCryptoName()
+                .filterCryptosByUSDT()
+                .filterCryptosByExistence()
+                .filterCryptoNormalizePrices()
+                .filterCryptoNormalizeName()
 
             Resource.Success(filteredResponse)
         } catch (e: IOException) {
@@ -35,8 +35,4 @@ class PriceRepository @Inject constructor (
             Resource.Error("Exception")
         }
     }
-
-    /*suspend fun getPrice(symbol: String) = cryptoService.getCryptoList(symbol)
-
-    suspend fun getPrice(symbols: List<String>) = cryptoService.getCryptoList(symbols)*/
 }

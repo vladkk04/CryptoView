@@ -31,18 +31,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        super.onPrepareOptionsMenu(menu)
-
-        return true
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.topbar_menu, menu)
         val menuItemSearch = menu?.findItem(R.id.search)
-        val menuItemFavorite = menu?.findItem(R.id.favorite)
-
-
         val actionView = menuItemSearch?.actionView
 
         if (actionView is SearchView) {
@@ -55,7 +46,6 @@ class MainActivity : AppCompatActivity() {
                     mainViewModel.setSearchQuery(newText)
                     return true
                 }
-
             })
         }
         return super.onCreateOptionsMenu(menu)

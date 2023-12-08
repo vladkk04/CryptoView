@@ -1,19 +1,14 @@
 package com.example.cryptoview.data.local.repository
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
 import com.example.cryptoview.data.di.CurrencyDataStore
 import com.example.cryptoview.data.local.CurrencyPreferencesService
 import com.example.cryptoview.utils.Resource
 import com.example.cryptoview.utils.TypeOfCurrency
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -32,7 +27,6 @@ class CurrencyPreferencesRepository @Inject constructor(
             }
         }
     }
-
     override suspend fun getExchangeRateFromPreferences(currency: TypeOfCurrency): Resource<Double> {
         return try {
             currencyDataStorePreferences.data.flowOn(dispatcher)
@@ -51,11 +45,7 @@ class CurrencyPreferencesRepository @Inject constructor(
         }
     }
 
-
-
     override suspend fun getExchangeAllRatesFromPreferences(): Resource<HashMap<String, Double>> {
         TODO("Not yet implemented")
     }
-
-
 }

@@ -21,6 +21,7 @@ fun <T> createTabsLayout(
         tabLayout.newTab().apply {
             if (customViewID != null){
                 setCustomView(customViewID)
+                customView?.findViewById<TextView>(textView)?.text = tabItem.toString()
             }
             text = tabItem.toString()
             tag = tabItem
@@ -28,7 +29,6 @@ fun <T> createTabsLayout(
                 onLongClickListener?.invoke(tabItem, index)
                 true
             }
-            customView?.findViewById<TextView>(textView)?.text = tabItem.toString()
         }.also { tabLayout.addTab(it) }
     }
 

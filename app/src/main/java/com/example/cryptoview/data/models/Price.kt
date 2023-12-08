@@ -1,7 +1,5 @@
 package com.example.cryptoview.data.models
 
-import com.example.cryptoview.ui.states.HomeScreenSortState.SortBy
-import com.example.cryptoview.ui.states.HomeScreenSortState.SortState
 import com.example.cryptoview.utils.TypeOfCurrency
 import java.math.BigDecimal
 
@@ -9,6 +7,8 @@ data class Price(
     val symbol: String,
     val lastPrice: String
 )
+
+private val priceRegex = Regex("(\\d+\\.\\d+[1-9](?![1-9]?!0))")
 
 fun List<Price>.sortBy(sortBy: SortBy): List<Price> = when (sortBy) {
     SortBy.NAME -> {
@@ -28,26 +28,24 @@ fun List<Price>.sortBy(sortBy: SortBy): List<Price> = when (sortBy) {
     }
 }
 
-fun List<Price>.filterCryptosToUSDT(): List<Price> = this.filter {
-    it.symbol.contains("USDT")
+fun List<Price>.filterCryptosByUSDT(): List<Price> = this.filter {
+    it.symbol.endsWith("USDT")
 }
 
-fun List<Price>.filterToExistCryptos(): List<Price> = this.filter {
+fun List<Price>.filterCryptosByExistence(): List<Price> = this.filter {
     it.lastPrice.toBigDecimal() > BigDecimal.ZERO
 }
 
-fun List<Price>.filterNormalizeCryptoName(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD): List<Price> = this.map { item ->
+fun List<Price>.filterCryptoNormalizeName(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD): List<Price> = this.map { item ->
     when (typeOfCurrency) {
         TypeOfCurrency.USD -> { item.copy(symbol = item.symbol.removeSuffix("USDT")) }
         else -> { item.copy(symbol = item.symbol.removeSuffix(typeOfCurrency.name)) }
     }
 }
 
-fun List<Price>.filterNormalizePrices(): List<Price> = this.map { item ->
-    val regex = Regex("(\\d+\\.\\d+[1-9](?![1-9]?!0))")
+fun List<Price>.filterCryptoNormalizePrices(): List<Price> = this.map { item ->
     val originalPrice = item.lastPrice.toBigDecimal()
-
-    item.copy(lastPrice = regex.find(originalPrice.toPlainString())?.value ?: String.format("%.2f", originalPrice))
+    item.copy(lastPrice = priceRegex.find(originalPrice.toPlainString())?.value ?: String.format("%.2f", originalPrice))
 }
 
 

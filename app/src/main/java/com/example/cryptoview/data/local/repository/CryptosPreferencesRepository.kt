@@ -36,19 +36,15 @@ class CryptosPreferencesRepository @Inject constructor(
             }
         }
     }
-
     override suspend fun getAllCryptosFromPreferences(): Resource<List<Price>> {
         return try {
-            val prices = cryptosPreferencesDataStore.data.map { preferences ->
+            val prices = cryptosPreferencesDataStore.data.flowOn(dispatcher).map { preferences ->
                 preferences.asMap().mapNotNull { entry ->
                     val symbol = entry.key.name
                     val lastPrice = entry.value.toString()
                     Price(symbol, lastPrice)
                 }
             }.first()
-
-           Log.d("d", prices.toString())
-
             Resource.Success(emptyList())
         } catch (e: IOException) {
             Resource.Error(e.message ?: "IO error occurred", null)

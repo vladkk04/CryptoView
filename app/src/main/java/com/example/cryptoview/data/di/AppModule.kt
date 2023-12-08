@@ -19,7 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
     @Provides
     fun provideDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
@@ -36,5 +35,4 @@ object AppModule {
         currencyService: CurrencyService,
         dispatcher: CoroutineDispatcher
     ): CurrencyRepository = CurrencyRepository(currencyService, dispatcher)
-
 }
