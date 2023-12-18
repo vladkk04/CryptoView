@@ -13,8 +13,8 @@ class CurrencyRepository @Inject constructor(
     private val currencyService: CurrencyService,
     private val dispatcher: CoroutineDispatcher
 ) {
-    suspend fun getAllLatestRatesCurrencies(): Resource<Currency> = withContext(dispatcher) {
-        try {
+    suspend fun getAllLatestRatesCurrencies(): Resource<Currency> {
+        return try {
             val response = currencyService.getAllLatestRatesCurrencies()
             Resource.Success(response)
         } catch (e: IOException) {

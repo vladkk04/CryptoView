@@ -7,7 +7,6 @@ data class HomeScreenUIState(
     val cryptos: List<Price> = emptyList(),
     val isSortByName: SortState = SortState.NONE,
     val isSortByPrice: SortState = SortState.NONE,
-    val exchangeRate: Double ?= null,
     val error: String ?= null,
 ) {
 

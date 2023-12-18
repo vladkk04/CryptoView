@@ -1,5 +1,7 @@
 package com.example.cryptoview.data.models
 
+import com.example.cryptoview.ui.states.HomeScreenUIState.SortState
+import com.example.cryptoview.ui.states.HomeScreenUIState.SortBy
 import com.example.cryptoview.utils.TypeOfCurrency
 import java.math.BigDecimal
 

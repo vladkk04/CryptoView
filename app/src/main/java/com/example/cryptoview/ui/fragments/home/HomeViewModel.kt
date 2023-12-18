@@ -1,5 +1,6 @@
 package com.example.cryptoview.ui.fragments.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cryptoview.data.local.repository.CryptosPreferencesRepository
@@ -18,7 +19,12 @@ import com.example.cryptoview.utils.toNormalPrice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,6 +38,9 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeScreenUIState())
     val uiState: StateFlow<HomeScreenUIState> get() = _uiState
 
+    private val _exchangeRate = MutableStateFlow<Double?>(null)
+    val exchangeRate: StateFlow<Double?> get() = _exchangeRate
+
     private fun updateLoadingSource(isLoadingSource: LoadingSource) =
         _uiState.update { it.copy(isLoadingSource = isLoadingSource) }
 
@@ -39,7 +48,13 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(cryptos = cryptos) }
 
     private fun updateExchangeRate(exchangeRate: Double) =
-        _uiState.update { it.copy(exchangeRate = exchangeRate) }
+        _exchangeRate.update { currentValue ->
+            if (currentValue == exchangeRate) {
+                null
+            } else {
+                exchangeRate
+            }
+        }
 
     private fun updateError(error: String?) =
         _uiState.update { it.copy(error = error) }
@@ -64,7 +79,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadDailyCryptoStats()
-        loadAllLatestExchangeRates()
+        //loadAllLatestExchangeRates()
     }
 
     fun loadDailyCryptoStats(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD) = viewModelScope.launch {
@@ -79,7 +94,6 @@ class HomeViewModel @Inject constructor(
                 updateError(error = message)
             }
         )
-
         updateLoadingSource(isLoadingSource = LoadingSource.NONE)
     }
 
@@ -94,6 +108,8 @@ class HomeViewModel @Inject constructor(
                 updateError(error = message)
             }
         )
+
+        updateLoadingSource(isLoadingSource = LoadingSource.NONE)
     }
 
     fun getCryptoSortBy(sortBy: SortBy) {
@@ -129,8 +145,9 @@ class HomeViewModel @Inject constructor(
         items: List<Price>
     ) = viewModelScope.launch {
 
-        if (typeOfCurrency == TypeOfCurrency.USD)
+        if (typeOfCurrency == TypeOfCurrency.USD){
             return@launch updateListCryptos(items)
+        }
 
         getResourceResult(
             data = currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency),

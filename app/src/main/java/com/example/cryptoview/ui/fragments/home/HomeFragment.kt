@@ -1,6 +1,7 @@
 package com.example.cryptoview.ui.fragments.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -25,7 +26,15 @@ import com.example.cryptoview.utils.priceToDollar
 import com.example.cryptoview.utils.showLoadingBar
 import com.example.cryptoview.utils.showSnackBar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.observeOn
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -37,6 +46,8 @@ class HomeFragment : Fragment() {
     private val homeViewModel: HomeViewModel by viewModels()
 
     private val adapter: CryptoListAdapter by lazy { CryptoListAdapter() }
+
+    private var currencyLongClickListener = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,8 +73,26 @@ class HomeFragment : Fragment() {
                 }
 
                 launch {
-                    mainViewModel.searchQuery.collectLatest {
+                    homeViewModel.exchangeRate.collect {
+                        if (it == null)
+                            return@collect
+
+                        binding.currencyTabsLayout.getTabAt(currencyLongClickListener)?.customView?.findViewById<TextView>(
+                            R.id.currency_rate_text
+                        )?.let { textView ->
+                            if (textView.text.isEmpty()) {
+                                textView.text = it.toString().priceToDollar()
+                                textView.visibility = View.VISIBLE
+                            } else {
+                                textView.text = null
+                                textView.visibility = View.GONE
+                            }
+                        }
                     }
+                }
+
+                launch {
+                    mainViewModel.searchQuery.collectLatest {}
                 }
             }
         }
@@ -83,22 +112,8 @@ class HomeFragment : Fragment() {
                 homeViewModel.loadDailyCryptoStats(typeOfCurrency)
             },
             onLongClickListener = { typeOfCurrency, position ->
+                currencyLongClickListener = position
                 homeViewModel.loadExchangeRateCurrency(typeOfCurrency)
-                val exchangeRateTextView = binding.currencyTabsLayout.getTabAt(position)?.customView?.findViewById<TextView>(
-                    R.id.currency_rate_text
-                )
-
-                if (homeViewModel.uiState.value.exchangeRate != null) {
-                    exchangeRateTextView?.apply {
-                        visibility = View.VISIBLE
-                        if (text.isEmpty()) {
-                            text = homeViewModel.uiState.value.exchangeRate.toString().priceToDollar()
-                        } else {
-                            visibility = View.GONE
-                            text = null
-                        }
-                    }
-                }
             }
         )
     }
@@ -122,6 +137,7 @@ class HomeFragment : Fragment() {
             }
             LoadingSource.EXCHANGE_RATE -> {
                 showLoadingBar(true)
+
             }
             else -> {
                 adapter.differ.submitList(uiState.cryptos) {
