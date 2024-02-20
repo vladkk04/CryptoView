@@ -10,12 +10,12 @@
 <div>
   
   <h4 style="text-align: center;">Add to Favorities </h4>
-  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
+  ![1]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
   <h4>View exchange rate currency to dollar</h4>
-  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/current_exchange_rate.gif" alt="Image 2" width="300">
+  ![2]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/current_exchange_rate.gif" alt="Image 2" width="300">
   <h4>Searching your Crypto Coin</h4>
-  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/searching.gif" alt="Image 3" width="300">
+  ![3]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/searching.gif" alt="Image 3" width="300">
   <h4>Sort by price and name your Crypto Coins</h4>
-  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/sorting.gif" alt="Image 4" width="300">
+  ![4]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/sorting.gif" alt="Image 4" width="300">
 </div>
 
