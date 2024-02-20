@@ -9,7 +9,7 @@
 <h2>Functionality of the App</h2>
 
 
-|          |             |                |       |
+|    hgfhgf      |             |                |       |
 | :---:    |    :----:   |          :---: | :---: |
 | ![1](https://github.com/vladkk04/CryptoView/blob/master/documentation/sorting.gif) | ![2](https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif) | ![3](https://github.com/vladkk04/CryptoView/blob/master/documentation/current_exchange_rate.gif) | ![4](https://github.com/vladkk04/CryptoView/blob/master/documentation/searching.gif)
 
