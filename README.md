@@ -7,15 +7,12 @@
 <p>Currency Conversion: View real-time exchange rates to the dollar for each cryptocurrency, simplifying the conversion process</p>
 
 <h2>Functionality of the App</h2>
-<div>
-  
-  <h4 style="text-align: center;">Add to Favorities </h4>
-  ![1]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
-  <h4>View exchange rate currency to dollar</h4>
-  ![2]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/current_exchange_rate.gif" alt="Image 2" width="300">
-  <h4>Searching your Crypto Coin</h4>
-  ![3]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/searching.gif" alt="Image 3" width="300">
-  <h4>Sort by price and name your Crypto Coins</h4>
-  ![4]<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/sorting.gif" alt="Image 4" width="300">
-</div>
+
+# [Ivy Wallet: money manager](https://play.google.com/store/apps/details?id=com.ivy.wallet)
+
+|          |             |                |       |
+| :---:    |    :----:   |          :---: | :---: |
+| ![1](https://user-images.githubusercontent.com/5564499/189540998-4d6cdcd3-ab4d-40f7-85d4-c82fe8a017d1.png) | ![2](https://user-images.githubusercontent.com/5564499/189541011-1ebbd8b6-50fe-432a-91e2-59206efe99ce.png) | ![3](https://user-images.githubusercontent.com/5564499/189541023-35e7f163-d639-4466-9a91-c56890d5a28e.png) | ![4](https://user-images.githubusercontent.com/5564499/189541027-d352314c-fd5c-43eb-82ad-4aba14c7b0fa.png)
+| ![5](https://user-images.githubusercontent.com/5564499/189541030-1a0d7948-33af-420b-b126-936d0211c93f.png) | ![6](https://user-images.githubusercontent.com/5564499/189541035-621c4511-5ec7-4d3f-b08e-925d8da95472.png) |![7](https://user-images.githubusercontent.com/5564499/189541127-7adf5bfa-0652-461c-80f1-076b7179eb6c.png) | ![8](https://user-images.githubusercontent.com/5564499/189541040-7cab633e-be4c-40b2-a2c6-890a15edf805.png)
+
 
