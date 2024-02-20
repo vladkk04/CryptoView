@@ -5,3 +5,6 @@
 <p>Real-Time Price Updates: Stay informed with the latest cryptocurrency prices sourced directly from the Binance API</p>
 <p>Favorites List: Easily track your preferred cryptocurrencies by adding them to your favorites list</p>
 <p>Currency Conversion: View real-time exchange rates to the dollar for each cryptocurrency, simplifying the conversion process</p>
+
+
+<img src="https://github.com/vladkk04/CryptoView/tree/master/documentation/sorting" alt="Image 1" width="300">
