@@ -8,7 +8,6 @@
 
 <h2>Functionality of the App</h2>
 
-|:---:|
 
 
 | Sort by price and name your Crypto Coins      |  Add to Favorities           |   View exchange rate currency to dollar             |  Searching your Crypto Coin    |
