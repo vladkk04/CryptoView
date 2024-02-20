@@ -7,4 +7,4 @@
 <p>Currency Conversion: View real-time exchange rates to the dollar for each cryptocurrency, simplifying the conversion process</p>
 
 
-<img src="https://github.com/vladkk04/CryptoView/tree/master/documentation/sorting" alt="Image 1" width="300">
+<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
