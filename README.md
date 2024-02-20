@@ -6,7 +6,7 @@
 <p>Favorites List: Easily track your preferred cryptocurrencies by adding them to your favorites list</p>
 <p>Currency Conversion: View real-time exchange rates to the dollar for each cryptocurrency, simplifying the conversion process</p>
 
-Functionality of the App
+<h2Functionality of the App</h2>
 <h4>Add to Favorities</h4>
 <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
 <h4>View exchange rate currency to dollar</h4>
