@@ -7,11 +7,14 @@
 <p>Currency Conversion: View real-time exchange rates to the dollar for each cryptocurrency, simplifying the conversion process</p>
 
 <h2>Functionality of the App</h2>
-<h4>Add to Favorities</h4>
-<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
-<h4>View exchange rate currency to dollar</h4>
-<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/current_exchange_rate.gif" alt="Image 1" width="300">
-<h4>Searching your Crypto Coin</h4>
-<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/searching.gif" alt="Image 1" width="300">
-<h4>Sort by price and name your Crypto Coins</h4>
-<img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/sorting.gif" alt="Image 1" width="300">
+<div>
+  <h4>Add to Favorities</h4>
+  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/add_to_favorite.gif" alt="Image 1" width="300">
+  <h4>View exchange rate currency to dollar</h4>
+  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/current_exchange_rate.gif" alt="Image 2" width="300">
+  <h4>Searching your Crypto Coin</h4>
+  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/searching.gif" alt="Image 3" width="300">
+  <h4>Sort by price and name your Crypto Coins</h4>
+  <img src="https://github.com/vladkk04/CryptoView/blob/master/documentation/sorting.gif" alt="Image 4" width="300">
+</div>
+
