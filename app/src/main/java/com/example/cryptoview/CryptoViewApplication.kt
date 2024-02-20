@@ -5,8 +5,4 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp(Application::class)
-class CryptoViewApplication: Application() {
-    override fun onCreate() {
-        super.onCreate()
-    }
-}
+class CryptoViewApplication: Application()

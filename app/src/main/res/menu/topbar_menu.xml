@@ -11,7 +11,7 @@
 
     <item
         android:id="@+id/favorite"
-        android:title="@string/tob_bar_title_favorite_text"
+        android:title="5"
         android:icon="@drawable/btn_star"
         app:actionLayout="@layout/custom_top_bar_btn_item_favorite"
         app:showAsAction="always">

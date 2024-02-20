@@ -1,16 +1,13 @@
 package com.example.cryptoview.data.di
 
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
+import com.example.cryptoview.data.local.room.dao.CryptoDao
 import com.example.cryptoview.data.network.CurrencyService
 import com.example.cryptoview.data.network.CryptoService
 import com.example.cryptoview.data.network.repository.CurrencyRepository
-import com.example.cryptoview.data.network.repository.PriceRepository
+import com.example.cryptoview.data.network.repository.CryptosRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -24,10 +21,11 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providePriceRepository(
-        cryptoService: CryptoService,
+    fun provideCryptosRepository(
+        remoteDataSourceService: CryptoService,
+        localDataSourceService: CryptoDao,
         dispatcher: CoroutineDispatcher
-    ): PriceRepository = PriceRepository(cryptoService, dispatcher)
+    ): CryptosRepository = CryptosRepository(remoteDataSourceService, localDataSourceService, dispatcher)
 
     @Singleton
     @Provides

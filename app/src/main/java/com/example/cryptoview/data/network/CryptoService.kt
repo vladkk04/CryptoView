@@ -8,5 +8,5 @@ import retrofit2.http.Headers
 interface CryptoService {
     @Headers(Constants.HEADER_API_KEY_BINANCE)
     @GET(Constants.BASE_TICKER_DAILY_URL)
-    suspend fun getDailyCryptoStats(): List<Price>
+    suspend fun getCryptos(): List<Price>
 }

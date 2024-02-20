@@ -2,11 +2,11 @@ package com.example.cryptoview.ui.fragments.home
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -14,27 +14,21 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cryptoview.R
+import com.example.cryptoview.data.models.Price
 import com.example.cryptoview.databinding.FragmentHomeBinding
 import com.example.cryptoview.ui.MainViewModel
 import com.example.cryptoview.ui.adapters.CryptoListAdapter
+import com.example.cryptoview.ui.adapters.CryptoListOnClickListeners
 import com.example.cryptoview.ui.states.HomeScreenUIState
-import com.example.cryptoview.ui.states.HomeScreenUIState.LoadingSource
-import com.example.cryptoview.ui.states.HomeScreenUIState.SortState
+import com.example.cryptoview.utils.SortType
 import com.example.cryptoview.utils.TypeOfCurrency
 import com.example.cryptoview.utils.createTabsLayout
 import com.example.cryptoview.utils.priceToDollar
 import com.example.cryptoview.utils.showLoadingBar
 import com.example.cryptoview.utils.showSnackBar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.observeOn
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -47,15 +41,22 @@ class HomeFragment : Fragment() {
 
     private val adapter: CryptoListAdapter by lazy { CryptoListAdapter() }
 
-    private var currencyLongClickListener = 0
+    private var positionOnLongClickListener = 0
+
+
+    //private val connectivityManager = getSystemService(this.requireContext(), ConnectivityManager::class.java) as ConnectivityManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        val linearLayoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.layoutManager = linearLayoutManager
+
+        binding.recyclerView.itemAnimator = null
 
         return binding.root
     }
@@ -64,42 +65,61 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
-        createUI()
+        createTabsTypeOfCurrencies()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            launch {
+                observeUIState()
+            }
+            launch {
+                observeExchangeRate()
+            }
+            launch {
+                observeSearchQuery()
+            }
+            launch {
+                homeViewModel.countIsFavorite.collectLatest {
+                    mainViewModel.setCountFavorite (it)
+                }
+            }
+            launch {
+                mainViewModel.isFilterByFavorite.collectLatest {
+                    if(it) homeViewModel.getCryptosSortBy(SortType.FAVORITE)
+                    else homeViewModel.getCryptosSortBy(SortType.NONE)
+                }
+            }
+        }
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    collectUIState()
+                    homeViewModel.loadCryptos()
                 }
-
                 launch {
-                    homeViewModel.exchangeRate.collect {
-                        if (it == null)
-                            return@collect
-
-                        binding.currencyTabsLayout.getTabAt(currencyLongClickListener)?.customView?.findViewById<TextView>(
-                            R.id.currency_rate_text
-                        )?.let { textView ->
-                            if (textView.text.isEmpty()) {
-                                textView.text = it.toString().priceToDollar()
-                                textView.visibility = View.VISIBLE
-                            } else {
-                                textView.text = null
-                                textView.visibility = View.GONE
-                            }
-                        }
-                    }
-                }
-
-                launch {
-                    mainViewModel.searchQuery.collectLatest {}
+                    homeViewModel.loadAllExchangeRatesFromRemote()
                 }
             }
         }
     }
+    private suspend fun observeSearchQuery() = mainViewModel.searchQuery.collectLatest { filterBySearch(it) }
 
-    private fun createUI() {
-        createTabsTypeOfCurrencies()
+    private suspend fun observeUIState() = homeViewModel.uiState.collectLatest { updateUI(it) }
+    private suspend fun observeExchangeRate() {
+        homeViewModel.exchangeRate.collectLatest {
+            binding.currencyTabsLayout.getTabAt(positionOnLongClickListener)?.customView?.findViewById<TextView>(
+                R.id.currency_rate_text
+            )?.let { textView ->
+                if (it == null) {
+                    return@let
+                } else if (textView.text.isEmpty()) {
+                    textView.text = it.toString().priceToDollar()
+                    textView.visibility = View.VISIBLE
+                } else {
+                    textView.text = null
+                    textView.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun createTabsTypeOfCurrencies() {
@@ -109,63 +129,70 @@ class HomeFragment : Fragment() {
             textView = R.id.currency_type_text,
             customViewID = R.layout.currency_item_tabs,
             onTabSelected = { typeOfCurrency ->
-                homeViewModel.loadDailyCryptoStats(typeOfCurrency)
+                homeViewModel.loadCryptos(typeOfCurrency)
             },
             onLongClickListener = { typeOfCurrency, position ->
-                currencyLongClickListener = position
                 homeViewModel.loadExchangeRateCurrency(typeOfCurrency)
+                positionOnLongClickListener = position
             }
         )
     }
 
     private fun setupClickListeners() {
         binding.textSortByName.setOnClickListener {
-            homeViewModel.getCryptoSortBy(HomeScreenUIState.SortBy.NAME)
+            homeViewModel.getCryptosSortBy(SortType.NAME)
         }
         binding.textSortByPrice.setOnClickListener {
-            homeViewModel.getCryptoSortBy(HomeScreenUIState.SortBy.PRICE)
+            homeViewModel.getCryptosSortBy(SortType.PRICE)
         }
+
+        adapter.setOnClickListener(object : CryptoListOnClickListeners {
+            override fun onClick(position: Int, model: Price) {
+                model.isFavorite = !model.isFavorite
+                homeViewModel.updateIsFavorite(model)
+            }
+        })
     }
 
     private fun updateUI(uiState: HomeScreenUIState) {
-        showSnackBar(uiState.error, actionText = "Try Again", action = {homeViewModel.loadDailyCryptoStats()})
+        showSnackBar(uiState.error)
 
-        when (uiState.isLoadingSource) {
-            LoadingSource.DAILY_STATS -> {
-                showLoadingBar(true)
-                binding.recyclerView.visibility = View.INVISIBLE
-            }
-            LoadingSource.EXCHANGE_RATE -> {
-                showLoadingBar(true)
-
-            }
-            else -> {
-                adapter.differ.submitList(uiState.cryptos) {
-                    binding.recyclerView.visibility = View.VISIBLE
-                }
+        if (uiState.isLoading) {
+            binding.recyclerView.visibility = View.GONE
+            showLoadingBar(true)
+        } else {
+            adapter.differ.submitList(uiState.cryptos) {
+                binding.recyclerView.visibility = View.VISIBLE
                 showLoadingBar(false)
             }
         }
+
+        updateSortStateViews(uiState)
     }
 
     private fun updateSortStateViews(uiState: HomeScreenUIState) {
-        when (uiState.isSortByName) {
-            SortState.NONE -> binding.textSortByName.setText(R.string.text_filter_by_name_relevant)
-            SortState.UP -> binding.textSortByName.setText(R.string.text_filter_by_name_A)
-            SortState.DOWN -> binding.textSortByName.setText(R.string.text_filter_by_name_Z)
-        }
-        when (uiState.isSortByPrice) {
-            SortState.NONE -> binding.textSortByPrice.setText(R.string.text_filter_by_price_relevant)
-            SortState.UP -> binding.textSortByPrice.setText(R.string.text_filter_by_price_low)
-            SortState.DOWN -> binding.textSortByPrice.setText(R.string.text_filter_by_price_high)
+        when (uiState.sortType) {
+            SortType.NAME -> {
+                binding.textSortByName.text = resources.getStringArray(R.array.text_filter_by_name_array)[uiState.sortOrder.ordinal]
+                binding.textSortByPrice.text = resources.getStringArray(R.array.text_filter_by_price_array)[0]
+            }
+            SortType.PRICE -> {
+                binding.textSortByPrice.text = resources.getStringArray(R.array.text_filter_by_price_array)[uiState.sortOrder.ordinal]
+                binding.textSortByName.text = resources.getStringArray(R.array.text_filter_by_name_array)[0]
+            }
+            SortType.NONE -> {
+                binding.textSortByPrice.text = resources.getStringArray(R.array.text_filter_by_price_array)[0]
+                binding.textSortByName.text = resources.getStringArray(R.array.text_filter_by_name_array)[0]
+            }
+            SortType.FAVORITE -> {
+
+            }
         }
     }
 
-    private suspend fun collectUIState() {
-        homeViewModel.uiState.collectLatest {
-            updateUI(it)
-        }
-    }
+    private fun filterBySearch(query: String) = adapter.differ.submitList(homeViewModel.uiState.value.cryptos.filter {
+        it.symbol.contains(query.uppercase())
+    })
 
     override fun onDestroyView() {
         super.onDestroyView()

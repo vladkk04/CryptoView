@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.fragments.home.HomeFragment"
-    android:padding="10dp">
+    tools:context=".ui.fragments.home.HomeFragment">
 
     <include layout="@layout/loading_bar"/>
 
@@ -27,14 +26,15 @@
         android:gravity="center_horizontal"
         android:weightSum="1"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:layout_marginHorizontal="10dp">
 
         <TextView
             android:id="@+id/text_sort_by_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_filter_by_name_textSize"
-            android:text="@string/text_filter_by_name_relevant"
+            android:text="null"
             android:gravity="start"
             android:layout_gravity="start"
             android:layout_weight="0.5"/>
@@ -44,7 +44,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_filter_by_price_textSize"
-            android:text="@string/text_filter_by_price_relevant"
+            android:text="null"
             android:gravity="end"
             android:layout_weight="0.5"
             android:layout_gravity="center" />
@@ -55,12 +55,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:paddingHorizontal="10dp"
         android:layout_below="@id/layout_filters">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:scrollbars="vertical"
             tools:listitem="@layout/crypto_list_item"/>
     </LinearLayout>
 

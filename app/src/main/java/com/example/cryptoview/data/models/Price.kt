@@ -1,41 +1,35 @@
 package com.example.cryptoview.data.models
 
-import com.example.cryptoview.ui.states.HomeScreenUIState.SortState
-import com.example.cryptoview.ui.states.HomeScreenUIState.SortBy
+import android.util.Log
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import com.example.cryptoview.ui.states.HomeScreenUIState
+import com.example.cryptoview.ui.states.HomeScreenUIState.*
 import com.example.cryptoview.utils.TypeOfCurrency
 import java.math.BigDecimal
+import java.math.MathContext
+import java.math.RoundingMode
+import java.util.Collections
+import java.util.Deque
 
+
+@Entity(tableName = "cryptos")
 data class Price(
-    val symbol: String,
-    val lastPrice: String
+    @PrimaryKey val symbol: String,
+    @ColumnInfo var lastPrice: BigDecimal,
+    @ColumnInfo var isFavorite: Boolean
 )
 
-private val priceRegex = Regex("(\\d+\\.\\d+[1-9](?![1-9]?!0))")
-
-fun List<Price>.sortBy(sortBy: SortBy): List<Price> = when (sortBy) {
-    SortBy.NAME -> {
-        when (sortBy.sortState) {
-            SortState.UP -> this.sortedBy { it.symbol }
-            SortState.DOWN -> this.sortedByDescending { it.symbol }
-            SortState.NONE -> this
-        }
-    }
-
-    SortBy.PRICE -> {
-        when (sortBy.sortState) {
-            SortState.UP -> this.sortedBy { it.lastPrice.toDouble() }
-            SortState.DOWN -> this.sortedByDescending { it.lastPrice.toDouble() }
-            SortState.NONE -> this
-        }
-    }
-}
+private val priceRegex = Regex("(\\d+\\.*\\d*[1-9])")
 
 fun List<Price>.filterCryptosByUSDT(): List<Price> = this.filter {
     it.symbol.endsWith("USDT")
 }
 
 fun List<Price>.filterCryptosByExistence(): List<Price> = this.filter {
-    it.lastPrice.toBigDecimal() > BigDecimal.ZERO
+    it.lastPrice > BigDecimal.ZERO
 }
 
 fun List<Price>.filterCryptoNormalizeName(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD): List<Price> = this.map { item ->
@@ -46,9 +40,25 @@ fun List<Price>.filterCryptoNormalizeName(typeOfCurrency: TypeOfCurrency = TypeO
 }
 
 fun List<Price>.filterCryptoNormalizePrices(): List<Price> = this.map { item ->
-    val originalPrice = item.lastPrice.toBigDecimal()
-    item.copy(lastPrice = priceRegex.find(originalPrice.toPlainString())?.value ?: String.format("%.2f", originalPrice))
+    val resultFromRegex = priceRegex.find(item.lastPrice.toString())?.value
+    item.copy(lastPrice = resultFromRegex?.toBigDecimal() ?: item.lastPrice)
 }
+
+fun List<Price>.roundCryptoPrices(): List<Price> = this.map { item ->
+    val splitNumber = item.lastPrice.toString().split('.')
+    val countZerosInDecimal = splitNumber.component2().takeWhile{ it == '0' }.count()
+
+    val resultAfterScale = if (splitNumber.component1().length > 1) {
+        item.lastPrice.setScale(2, RoundingMode.DOWN)
+    } else {
+        item.lastPrice.setScale(countZerosInDecimal + 3, RoundingMode.DOWN)
+    }
+
+    item.copy(lastPrice = resultAfterScale)
+}
+
+
+
 
 
 

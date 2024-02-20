@@ -73,12 +73,19 @@ dependencies {
     implementation(libs.retrofit)
 
     implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
+
     implementation(libs.gson)
 
     implementation(libs.datastore.core)
     implementation(libs.datastore.preferences)
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
-    ksp(libs.dagger.hilt.compiler)
+    ksp(libs.room.compiler)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    annotationProcessor(libs.room.compiler)
+
 
     testImplementation(testLibs.junit)
     androidTestImplementation(testLibs.androidx.test.ext.junit)

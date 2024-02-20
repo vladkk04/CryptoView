@@ -1,7 +1,43 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.CryptoView" parent="Theme.Material3.DayNight">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+        <item name="colorPrimary">#00ADB5</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/blue_50</item>
+        <item name="colorOnPrimaryContainer">@color/blue_black_3_3</item>
+
+        <item name="android:textColor">#EEEEEE</item>
+
+        <item name="colorSecondary">@color/blue_grey_800</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/blue_50_bit_black</item>
+        <item name="colorOnSecondaryContainer">@color/blue_black_3_3_bit_black</item>
+
+        <item name="colorTertiary">@color/amber_700</item>
+        <item name="colorOnTertiary">@color/white</item>
+        <item name="colorTertiaryContainer">@color/amber_100</item>
+        <item name="colorOnTertiaryContainer">@color/amber_black_3_4</item>
+
+        <item name="colorError">@color/red_900</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/red_50</item>
+        <item name="colorOnErrorContainer">@color/red_black_2_3</item>
+
+        <item name="android:colorBackground">@color/nigga</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="colorSurface">@color/nigga</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <item name="colorSurfaceVariant">#00ADB5</item>
+        <item name="colorOnSurfaceVariant">@color/blue500_black_5_6</item>
+        <item name="colorOutline">@color/grey_600</item>
+
+        <item name="colorSurfaceInverse">@color/blue_black_5_6</item>
+        <item name="colorOnSurfaceInverse">@color/blue_white_5_6</item>
+        <item name="colorPrimaryInverse">@color/blue_a100</item>
+
+        <item name="android:statusBarColor">#00ADB5</item>
+        <item name="android:windowLightStatusBar">false</item>
+
     </style>
 </resources>

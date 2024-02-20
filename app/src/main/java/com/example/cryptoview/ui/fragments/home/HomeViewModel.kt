@@ -1,28 +1,36 @@
 package com.example.cryptoview.ui.fragments.home
 
+import android.database.DatabaseErrorHandler
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cryptoview.data.local.repository.CryptosPreferencesRepository
-import com.example.cryptoview.data.local.repository.CurrencyPreferencesRepository
+import com.example.cryptoview.data.local.preferences.repository.CurrencyPreferencesRepository
 import com.example.cryptoview.data.models.Price
-import com.example.cryptoview.data.models.sortBy
+import com.example.cryptoview.data.models.filterCryptoNormalizePrices
+import com.example.cryptoview.data.models.roundCryptoPrices
+import com.example.cryptoview.data.network.repository.CryptosRepository
 import com.example.cryptoview.data.network.repository.CurrencyRepository
-import com.example.cryptoview.data.network.repository.PriceRepository
 import com.example.cryptoview.ui.states.HomeScreenUIState
-import com.example.cryptoview.ui.states.HomeScreenUIState.SortState
-import com.example.cryptoview.ui.states.HomeScreenUIState.SortBy
-import com.example.cryptoview.ui.states.HomeScreenUIState.LoadingSource
+import com.example.cryptoview.utils.Resource
+import com.example.cryptoview.utils.SortOrder
+import com.example.cryptoview.utils.SortType
 import com.example.cryptoview.utils.TypeOfCurrency
 import com.example.cryptoview.utils.getResourceResult
-import com.example.cryptoview.utils.toNormalPrice
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
@@ -30,140 +38,163 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val priceRepository: PriceRepository,
+    private val cryptosRepository: CryptosRepository,
     private val currencyRepository: CurrencyRepository,
     private val currencyPreferencesRepository: CurrencyPreferencesRepository,
-    private val cryptosPreferencesRepository: CryptosPreferencesRepository
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(HomeScreenUIState())
-    val uiState: StateFlow<HomeScreenUIState> get() = _uiState
+    private val cryptos = MutableStateFlow<List<Price>>(emptyList())
 
-    private val _exchangeRate = MutableStateFlow<Double?>(null)
-    val exchangeRate: StateFlow<Double?> get() = _exchangeRate
+    private val _exchangeRate = MutableSharedFlow<Double?>()
+    val exchangeRate = _exchangeRate.asSharedFlow()
 
-    private fun updateLoadingSource(isLoadingSource: LoadingSource) =
-        _uiState.update { it.copy(isLoadingSource = isLoadingSource) }
+    val countIsFavorite = cryptosRepository.getCountFavoritesCryptos()
 
-    private fun updateListCryptos(cryptos: List<Price>) =
-        _uiState.update { it.copy(cryptos = cryptos) }
+    private val _sortType = MutableStateFlow(SortType.NONE)
+    private val _sortOrder = MutableStateFlow(SortOrder.NONE)
 
-    private fun updateExchangeRate(exchangeRate: Double) =
-        _exchangeRate.update { currentValue ->
-            if (currentValue == exchangeRate) {
-                null
-            } else {
-                exchangeRate
-            }
+    private val _sortBy = combine(_sortType, _sortOrder) { sortType, sortOrder ->
+        Pair(sortType, sortOrder)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _cryptos = _sortBy.flatMapLatest { (sortType, sortOrder) ->
+        when (sortType) {
+            SortType.NONE -> cryptos
+            SortType.NAME -> cryptosRepository.getCryptosOrderedByName(cryptos, sortOrder)
+            SortType.PRICE -> cryptosRepository.getCryptosOrderedByPrice(cryptos, sortOrder)
+            SortType.FAVORITE -> cryptosRepository.getCryptosOrderedByFavorite()
         }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    private fun updateError(error: String?) =
-        _uiState.update { it.copy(error = error) }
 
-    private fun updateUISortState(
-        isSortedByName: SortState,
-        isSortedByPrice: SortState
-    ) {
+    val uiState = combine(_uiState, _cryptos) { uiState, cryptos ->
+        uiState.copy(
+            cryptos = cryptos,
+            sortOrder = _sortOrder.value,
+            sortType = _sortType.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeScreenUIState())
+
+    fun loadCryptos(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD) = viewModelScope.launch {
+        if (typeOfCurrency == TypeOfCurrency.USD) {
+            loadCryptosFromRemote()
+        } else {
+            loadCryptosFromDatabase(typeOfCurrency)
+        }
+    }
+
+    private suspend fun loadCryptosFromRemote() {
         _uiState.update {
             it.copy(
-                isSortByName = isSortedByName,
-                isSortByPrice = isSortedByPrice
+                error = null,
+                isLoading = true
+            )
+        }
+        when (val result = cryptosRepository.getRemoteCryptos()) {
+            is Resource.Success -> {
+                try {
+                    val cryptosCount = cryptosRepository.getCryptosFromDatabase().first().count()
+
+                    if (cryptosCount > 0) {
+                        result.data!!.map {
+                            cryptosRepository.updatePrice(it.symbol, it.lastPrice)
+                        }
+                    } else {
+                        throw IndexOutOfBoundsException()
+                    }
+
+                } catch (e: IndexOutOfBoundsException) {
+                    cryptosRepository.saveOrUpdateCryptosToDatabase(result.data!!)
+                    Log.d("error", e.message.toString())
+                }
+
+                cryptos.value = cryptosRepository.getCryptosFromDatabase().first()
+
+                _uiState.update {
+                    it.copy(
+                        error = null,
+                        isLoading = false
+                    )
+                }
+            }
+            is Resource.Error -> {
+                _uiState.update {
+                    it.copy(
+                        error = "You have no actuality database!",
+                        isLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun getCryptosSortBy(sortType: SortType) = viewModelScope.launch {
+        val nextSortOrder = SortOrder.values()[(_sortOrder.value.ordinal + 1) % SortOrder.entries.size]
+
+        _sortType.value = sortType
+        _sortOrder.value = nextSortOrder
+    }
+
+    private suspend fun loadCryptosFromDatabase(typeOfCurrency: TypeOfCurrency) {
+        currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency).collectLatest { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    cryptos.value = cryptosRepository.getCryptosFromDatabaseByExchangeRate(resource.data!!)
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            error = "You don't have local database with exchange rate",
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun loadAllExchangeRatesFromRemote() {
+        currencyRepository.getAllLatestRatesCurrencies().collectLatest { result ->
+            getResourceResult(
+                data = result,
+                success = {
+                    viewModelScope.launch {
+                        currencyPreferencesRepository.saveAllExchangeRatesToPreferences(it.rates)
+                    }
+                },
+                error = { msg, _ ->
+                    _uiState.update {
+                        it.copy(
+                            error = "You can't upload exchange rate from ethernet",
+                        )
+                    }
+                }
+
             )
         }
     }
 
-    private val getPricesByExchangeRate: (cryptos: List<Price>, exchangeRate: Double) -> List<Price> = { cryptos, exchangeRate ->
-        cryptos.map { item ->
-            item.copy(lastPrice = (item.lastPrice.toDouble() * (exchangeRate)).toString().toNormalPrice())
-        }
-    }
-
-    init {
-        loadDailyCryptoStats()
-        //loadAllLatestExchangeRates()
-    }
-
-    fun loadDailyCryptoStats(typeOfCurrency: TypeOfCurrency = TypeOfCurrency.USD) = viewModelScope.launch {
-        updateLoadingSource(isLoadingSource = LoadingSource.DAILY_STATS)
-
-        getResourceResult(
-            data = priceRepository.getDailyCryptoStats(),
-            success = {
-                getAndUpdatePriceByExchangeRate(typeOfCurrency, it)
-            },
-            error = { message, _ ->
-                updateError(error = message)
-            }
-        )
-        updateLoadingSource(isLoadingSource = LoadingSource.NONE)
+    fun updateIsFavorite(crypto: Price) = viewModelScope.launch {
+        cryptosRepository.updateIsFavorite(crypto.symbol, crypto.isFavorite)
+        cryptos.value = cryptosRepository.getCryptosFromDatabase().first()
     }
 
     fun loadExchangeRateCurrency(typeOfCurrency: TypeOfCurrency) = viewModelScope.launch {
-        updateLoadingSource(isLoadingSource = LoadingSource.EXCHANGE_RATE)
-
-        getResourceResult(
-            data = currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency),
-            success = {
-                updateExchangeRate(exchangeRate = it)
-            }, error = { message, _ ->
-                updateError(error = message)
-            }
-        )
-
-        updateLoadingSource(isLoadingSource = LoadingSource.NONE)
-    }
-
-    fun getCryptoSortBy(sortBy: SortBy) {
-        sortBy.sortState = SortState.values()[(sortBy.sortState.ordinal + 1) % SortState.values().size]
-        resetOtherSortStatesToNone(except = sortBy)
-
-        updateUISortState(
-            isSortedByName = SortBy.NAME.sortState,
-            isSortedByPrice = SortBy.PRICE.sortState
-        )
-
-        updateListCryptos(
-            cryptos = _uiState.value.cryptos.sortBy(sortBy)
-        )
-    }
-
-    private fun loadAllLatestExchangeRates() = viewModelScope.launch {
-        updateLoadingSource(LoadingSource.EXCHANGE_RATE)
-        getResourceResult(
-            data = currencyRepository.getAllLatestRatesCurrencies(),
-            success = {
-                //currencyPreferencesRepository.saveAllExchangeRatesToPreferences(it.rates)
-            },
-            error = { message, _ ->
-                updateError(message)
-            }
-        )
-        updateLoadingSource(LoadingSource.NONE)
-    }
-
-    private fun getAndUpdatePriceByExchangeRate(
-        typeOfCurrency: TypeOfCurrency,
-        items: List<Price>
-    ) = viewModelScope.launch {
-
-        if (typeOfCurrency == TypeOfCurrency.USD){
-            return@launch updateListCryptos(items)
-        }
-
-        getResourceResult(
-            data = currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency),
-            success = {
-                updateListCryptos(cryptos = getPricesByExchangeRate(items, it))
-            }, error = { message, _ ->
-                updateError(error = message)
-            }
-        )
-    }
-
-    private fun resetOtherSortStatesToNone(except: SortBy) {
-        SortBy.values().forEach { sortBy ->
-            if (sortBy != except) {
-                sortBy.sortState = SortState.NONE
+        currencyPreferencesRepository.getExchangeRateFromPreferences(typeOfCurrency).collectLatest { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    _exchangeRate.emit(resource.data!!)
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            error = "You can't upload exchange rate from preferences",
+                        )
+                    }
+                }
             }
         }
     }
 }
+

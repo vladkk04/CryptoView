@@ -9,11 +9,23 @@
     <string name="text_filter_by_name_A">Name: A</string>
     <string name="text_filter_by_name_Z">Name: Z</string>
 
-    <string name="text_when_exchange_data_isEmpty">No data</string>
-
     <string name="text_filter_by_price_relevant">Price: ~</string>
     <string name="text_filter_by_price_high">Price: high</string>
     <string name="text_filter_by_price_low">Price: low</string>
+
+    <string-array name="text_filter_by_name_array">
+        <item>@string/text_filter_by_name_relevant</item>
+        <item>@string/text_filter_by_name_A</item>
+        <item>@string/text_filter_by_name_Z</item>
+    </string-array>
+
+    <string-array name="text_filter_by_price_array">
+        <item>@string/text_filter_by_price_relevant</item>
+        <item>@string/text_filter_by_price_low</item>
+        <item>@string/text_filter_by_price_high</item>
+    </string-array>
+
+    <string name="text_when_exchange_data_isEmpty">No data</string>
     <string name="tob_bar_title_favorite_text">Favorite</string>
 
 

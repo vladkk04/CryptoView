@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.cryptoview.data.local.repository.CurrencyPreferencesRepository
-import com.example.cryptoview.data.local.CurrencyPreferencesService
+import com.example.cryptoview.data.local.preferences.repository.CurrencyPreferencesRepository
+import com.example.cryptoview.data.local.preferences.CurrencyPreferencesService
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -16,10 +16,6 @@ import javax.inject.Qualifier
 import javax.inject.Singleton
 
 private val Context.currencyDataStore: DataStore<Preferences> by preferencesDataStore("currency")
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class CurrencyDataStore
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -32,7 +28,6 @@ abstract class CurrencyDataStorePreferencesModule {
     companion object {
         @Singleton
         @Provides
-        @CurrencyDataStore
         fun provideCurrencyDataStorePreferences(
             @ApplicationContext context: Context
         ): DataStore<Preferences> = context.currencyDataStore

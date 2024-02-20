@@ -2,4 +2,40 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="nigga">#222831</color>
+
+    <color name="black_alpha_020">#33000000</color>
+    <color name="white_alpha_060">#99ffffff</color>
+
+    <color name="blue_50">#e3f2fd</color>
+    <color name="blue_50_bit_black">#E4F0F5</color>
+    <color name="blue_100">#bbdefb</color>
+    <color name="blue_300">#64b5f6</color>
+    <color name="blue_500">#2196f3</color>
+    <color name="blue_700">#1976d2</color>
+    <color name="blue_a100">#82b1ff</color>
+
+    <color name="blue_black_3_3">#072451</color>
+    <color name="blue_black_3_3_bit_black">#031228</color>
+    <color name="blue_white_5_6">#fafdff</color>
+    <color name="blue_black_5_6">#061929</color>
+    <color name="blue_black_10_2">#CEDCE6</color>
+    <color name="blue500_black_5_6">#26282A</color>
+
+    <color name="blue_50_alpha_060">#99e3f2fd</color>
+
+    <color name="blue_grey_700">#455a64</color>
+    <color name="blue_grey_800">#37474f</color>
+
+    <color name="amber_100">#ffecb3</color>
+    <color name="amber_700">#ffa000</color>
+    <color name="amber_black_3_4">#401C00</color>
+
+    <color name="red_50">#ffebee</color>
+    <color name="red_black_2_3">#3D0909</color>
+    <color name="red_900">#b71c1c</color>
+
+    <color name="grey_600">#757575</color>
+
 </resources>

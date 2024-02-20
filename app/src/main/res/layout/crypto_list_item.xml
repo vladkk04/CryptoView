@@ -39,7 +39,7 @@
             android:layout_height="match_parent"
             android:textSize="@dimen/text_name_crypto_size"
             android:gravity="center|start"
-            android:layout_weight="0.35"
+            android:layout_weight="0.4"
             tools:text="Bitcoin" />
 
         <TextView

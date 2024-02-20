@@ -15,8 +15,9 @@ dependencyResolutionManagement {
         create("libs") {
             val retrofit2 = version("retrofit", "2.9.0")
             val daggerHilt = version("dagger-hilt-android", "2.48.1")
-            val lifecycle = version("lifecycle", "2.4.0")
+            val lifecycle = version("lifecycle", "2.6.2")
             val dataStore = version("datastore", "1.0.0")
+            val room = version("data-room","2.5.1")
 
             version("core-ktx", "1.9.0")
             version("appcompat", "1.6.1")
@@ -53,6 +54,11 @@ dependencyResolutionManagement {
             //DataStore
             library("datastore-core", "androidx.datastore", "datastore-core").versionRef(dataStore)
             library("datastore-preferences", "androidx.datastore", "datastore-preferences").versionRef(dataStore)
+
+            //Data Room
+            library("room-runtime", "androidx.room", "room-runtime").versionRef(room)
+            library("room-compiler", "androidx.room", "room-compiler").versionRef(room)
+            library("room-ktx", "androidx.room", "room-ktx").versionRef(room)
         }
 
         create("testLibs" ) {

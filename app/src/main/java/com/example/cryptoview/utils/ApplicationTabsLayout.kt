@@ -5,9 +5,12 @@ import android.view.View
 import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import com.example.cryptoview.R
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 fun <T> createTabsLayout(
     tabLayout: TabLayout,
@@ -15,7 +18,7 @@ fun <T> createTabsLayout(
     @IdRes textView: Int,
     @LayoutRes customViewID: Int ?= null,
     onTabSelected: (T) -> Unit,
-    onLongClickListener: ((T, Int) -> Unit)? = null
+    onLongClickListener: ((T, Int) -> Unit)? = null,
 ) {
     tabs.forEachIndexed { index, tabItem ->
         tabLayout.newTab().apply {
@@ -35,6 +38,7 @@ fun <T> createTabsLayout(
     tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab) = onTabSelected(tab.tag as T)
         override fun onTabReselected(tab: TabLayout.Tab) = onTabSelected(tab)
-        override fun onTabUnselected(tab: TabLayout.Tab) {}
+        override fun onTabUnselected(tab: TabLayout.Tab){}
     })
+
 }
